@@ -5,6 +5,63 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-08: Apache Spark MLlib 最小比較パイプライン(Tier 2)
+
+### Summary
+
+- Spark 環境を固定: 公式イメージ(Spark 3.5.1 / Java 17 / python3)+ numpy のみ追加
+  する `docker/spark/Dockerfile`(公式イメージの python3 には numpy がなく
+  pyspark.ml が import 不能 — 実測)。smoke → fit → predict まで**実機で成功**
+- Running Example を `spark.sql`(relation定義)→ `RFormula("churn_flag ~ age +
+  gender")` + `GeneralizedLinearRegression(binomial/logit)` の Pipeline で実行
+- **最重要の発見: RFormula は formula の形をしているが R の意味論ではない**。
+  StringIndexer が水準を頻度順に並べ最頻でない水準を参照にするため、参照水準が
+  'F'(Rのソート第1水準)ではなく 'Other' になる。**同一モデルの別パラメータ化**で
+  あることを数値検証(intercept_spark = intercept_fbsql + genderOther_fbsql 等が
+  丸め誤差内で成立、予測は4桁で完全一致: 0.0406 / 0.9794 / 0.4280)。
+  R ワークフロー移植時の危険点として記録
+- **NULL / novel level は単一スイッチ `handleInvalid`**: 既定 'error' は NULL 特徴量で
+  transform が失敗(実測)、'skip' は**行を黙って落とす**(実測: 5行入力→3行出力。
+  FbSQL の「行を保持して NULL 予測」に相当する選択肢がない)
+- term 名(`gender_F` 形式)は ML attribute metadata からプログラムで抽出する必要が
+  あった — metadata がオブジェクト束縛である証左
+- `data/related_work.csv` の Spark 行を実測+公式ドキュメント(offset/weight は GLR の
+  offsetCol/weightCol、interaction は RFormula の ':'/'*')で更新
+
+### Changed Files
+
+- `docker/spark/Dockerfile`: 公式イメージ + numpy(新規)
+- `scripts/30_spark_smoke.sh` / `31_spark_running_example.{sh,py}` /
+  `32_compare_fbsql_spark.R`: 新規
+- `results/raw/running_example_{model,predictions}_spark.csv`: 実測出力
+- `results/summary/spark_running_example_summary.csv`(再パラメータ化の数値検証
+  付き15行)+ `spark_api_design_notes.csv`(17観点): 新規
+- `data/related_work.csv` + `results/tables/related_work.md`: Spark 行更新
+- `README.md`: Spark 比較セクション追加
+
+### Validation
+
+- smoke → SPARK_VERSION 3.5.1 / RFormula import OK
+- 31 実行 → 既定でのNULL失敗観測 + skip での予測出力
+- 32 比較 → **7値一致**(age 係数・SE、予測5件)+ 想定内の設計差8件
+  (参照水準の再パラメータ化を数値検証済み)、想定外の不一致 0
+
+### Known Issues
+
+- handleInvalid='keep'(未知水準のバケット化)は未実測(文書ベースで記録)
+- spark-submit は stdin を JAR 扱いするため、スモークはコンテナ内 .py 書き出し方式
+
+### Next Step
+
+- Tier 3(Apache Hivemall / H2O-3 + Sparkling Water)の文献調査で related_work.csv を
+  完成させる(実験不要、公式ドキュメントベース)。これで比較表が論文 Related Work
+  の下書きとして揃う
+
+Commit: `Add Spark MLlib running example comparison`(本エントリを含むコミット)。
+push 後の `git status`: clean。
+
+---
+
 ## 2026-07-08: PostgresML 最小比較パイプライン(Tier 2)
 
 ### Summary

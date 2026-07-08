@@ -90,6 +90,29 @@ hand-curated design observations live in
 (e.g. MADlib silently scoring unseen factor levels as the reference level)
 are annotated rather than treated as failures.
 
+## Spark MLlib comparison (Tier 2)
+
+Spark is compared because RFormula gives it a formula-shaped interface —
+the closest contrast to FbSQL's claim that formulas and SQL design
+principles can coexist. The environment is pinned by
+`docker/spark/Dockerfile` (official Spark 3.5.1 image + numpy, which
+pyspark.ml needs but the official image lacks):
+
+```bash
+docker build -t fbsql-exp-spark -f docker/spark/Dockerfile .
+scripts/30_spark_smoke.sh              # local-mode PySpark + RFormula import
+scripts/31_spark_running_example.sh    # churn example via RFormula + GLR pipeline
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/exp -w /exp fbsql-dev \
+    Rscript scripts/32_compare_fbsql_spark.R
+```
+
+Headline findings: predictions match R/FbSQL to 4 decimals (GLR is an IRLS
+GLM), but RFormula picks the least-frequent level as the factor reference,
+so coefficient tables agree only after reparameterization (verified
+numerically in step 32); the default pipeline errors on NULL features and
+`handleInvalid="skip"` silently drops rows. Design observations live in
+`results/summary/spark_api_design_notes.csv`.
+
 ## PostgresML comparison (Tier 2)
 
 PostgresML is compared as the other PostgreSQL-extension SQL-ML system. Its

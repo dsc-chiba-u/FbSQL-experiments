@@ -1,0 +1,5 @@
+term,estimate,std_error
+(Intercept),-12.812,7.4602
+age,0.2981,0.1669
+gender_F,0.7049,2.8735
+gender_M,0.2744,2.5099
