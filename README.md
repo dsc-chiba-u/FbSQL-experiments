@@ -69,6 +69,27 @@ Step 12 writes `results/summary/running_example_parity.csv` and fails if any
 FbSQL value disagrees with R's `glm()` / `predict.glm()` (both rounded to 4
 decimals).
 
+## MADlib comparison (Tier 1)
+
+The MADlib environment is pinned by `docker/madlib/Dockerfile` (the MADlib
+project's own CI base image for PostgreSQL 11, with the 1.21.0 release built
+from the Apache source archive). This is an API-design comparison, not a
+performance benchmark, so the older PostgreSQL major is acceptable.
+
+```bash
+docker build -t fbsql-exp-madlib -f docker/madlib/Dockerfile .
+scripts/20_madlib_smoke.sh              # madpack install + madlib.version()
+scripts/21_madlib_running_example.sh    # same churn example on MADlib
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/exp -w /exp fbsql-dev \
+    Rscript scripts/22_compare_fbsql_madlib.R
+```
+
+Step 22 writes `results/summary/madlib_running_example_summary.csv`;
+hand-curated design observations live in
+`results/summary/madlib_api_design_notes.csv`. Expected design differences
+(e.g. MADlib silently scoring unseen factor levels as the reference level)
+are annotated rather than treated as failures.
+
 Regenerate the related-work table draft from its CSV source:
 
 ```bash

@@ -5,6 +5,64 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-08: Apache MADlib 最小比較パイプライン(Tier 1)
+
+### Summary
+
+- MADlib 環境を Docker で固定: `madlib/postgres_11:jenkins`(MADlib プロジェクト自身の
+  CI イメージ、PostgreSQL 11)をベースに、Apache アーカイブの **MADlib 1.21.0 を
+  ソースビルド**する `docker/madlib/Dockerfile` を作成。ビルド・madpack インストール・
+  `madlib.version()` まで**実機で成功**
+- Running Example 相当(churn の logistic 回帰)を MADlib で実行(20番台スクリプト)。
+  gender は**手動 one-hot**(FbSQL の formula との対比が目的)
+- FbSQL との数値比較: **係数4件・予測3件が4桁一致**。設計差2件を注記付きで記録:
+  (1) novel level 'Nonbinary' を MADlib は**無言で参照水準として 0.2020 と予測**
+  (FbSQL は error / NULL)、(2) `(Intercept)` の std_err が4桁目のみ相違
+  (IRLS 許容差。3桁까지一致)
+- NULL 行の扱い: fit 時は MADlib も complete case(`num_missing_rows_skipped=1` を
+  実測)、predict 時は NULL 特徴量 → NULL(c104 で実測)
+- モデル表現の観測: fit は **void を返し2テーブルを副作用で生成**(モデル本体は
+  並列配列で term 名なし、`<out>_summary` は呼び出し文字列を保存)。
+  Relation-in / Relation-out・metadata 表現の差が実測で裏付けられた
+- `data/related_work.csv` の MADlib 行の TBD を実測ベースで解消(offset / weight /
+  reproducibility は未調査のため TBD のまま)
+
+### Changed Files
+
+- `docker/madlib/Dockerfile`: MADlib 1.21.0 ソースビルド環境(新規)
+- `scripts/20_madlib_smoke.sh` / `21_madlib_running_example.sh` /
+  `sql/21_madlib_running_example.sql` / `22_compare_fbsql_madlib.R`: 新規
+- `results/raw/running_example_{model,predictions}_madlib.csv`: 実測出力
+- `results/summary/madlib_running_example_summary.csv`: 数値比較(13行、注記付き)
+- `results/summary/madlib_api_design_notes.csv`: API 設計比較15観点(手保守)
+- `data/related_work.csv` + `results/tables/related_work.md`: MADlib 行更新・再生成
+- `README.md`: MADlib 比較セクション追加
+
+### Validation
+
+- `20_madlib_smoke.sh` → MADlib 1.21.0 installed successfully / version 応答
+- `21_madlib_running_example.sh` → fit・predict・CSV 出力まで成功
+- `22_compare_fbsql_madlib.R` → 11値一致、想定内の設計差2件(注記付き)、
+  想定外の不一致 0
+
+### Known Issues
+
+- madpack は root 実行不可(pg_ctl を呼ぶため)→ `docker exec -u postgres` で解決済み
+- コンテナ起動のたびに madpack install が走る(約1分)。頻繁になれば DB 焼き込みを検討
+- MADlib の offset / weight 対応と reproducibility 方針は未調査(related_work.csv は TBD)
+- PostgreSQL 11 + MADlib 1.21 の組(API 比較には十分だが、最新 PG との組は未検証)
+
+### Next Step
+
+- Tier 2 の PostgresML(同じ PostgreSQL extension 同士の比較として次に価値が高い)
+  の最小環境固定と Running Example 相当の実行、または MADlib 行の残 TBD
+  (offset / weight)の文書調査
+
+Commit: `Add MADlib running example comparison`(本エントリを含むコミット)。
+push 後の `git status`: clean。
+
+---
+
 ## 2026-07-08: FbSQL-experiments リポジトリの立ち上げ
 
 ### Summary
