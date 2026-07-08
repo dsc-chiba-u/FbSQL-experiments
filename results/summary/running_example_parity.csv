@@ -1,0 +1,14 @@
+"section","item","fbsql","r","match"
+"model","(Intercept)",-12.1071,-12.1071,TRUE
+"model","age",0.2981,0.2981,TRUE
+"model","genderM",-0.4305,-0.4305,TRUE
+"model","genderOther",-0.7049,-0.7049,TRUE
+"model_std_error","(Intercept)",7.1895,7.1895,TRUE
+"model_std_error","age",0.1669,0.1669,TRUE
+"model_std_error","genderM",2.5525,2.5525,TRUE
+"model_std_error","genderOther",2.8735,2.8735,TRUE
+"prediction","c101",0.0406,0.0406,TRUE
+"prediction","c102",0.9794,0.9794,TRUE
+"prediction","c103",0.428,0.428,TRUE
+"prediction","c104",,,TRUE
+"prediction","c105",,,TRUE
