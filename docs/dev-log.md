@@ -5,6 +5,52 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-08: 論文 Table assets の生成スクリプト(script 51)
+
+### Summary
+
+- `scripts/51_generate_paper_tables.R` を新設: `data/related_work.csv` と
+  `data/customer.csv` から論文の表アセットを `FbSQL/paper/tables/` へ
+  生成する(各表 .tex = JSS/LaTeX 用と .md = HTML 開発ビルド用の2形式。
+  論文側は手編集しない — 各出力の先頭に生成コメントを付与)
+- Table 1(related work)は紙面向けの縮約セル(17次元 × 6システム)を
+  script 内でキュレーションし、**ドリフト検知**で CSV に結合: 縮約セルの
+  判定語(yes/no/partial/TBD 等)が CSV セルの先頭語と食い違うと生成を
+  停止する。初回実行で PostgresML の reproducibility セルの不整合を
+  実際に検出 → 修正。完全なセル文は CSV に残り、表脚注が実測/文献の
+  証拠区分とともに CSV を指す
+- Table 2(customer dataset)は 2025/2026 を midrule で区切り NULL を
+  明示。R parity 表は本文で足りるため生成しない(判断を記録)
+- 実行は両リポジトリをマウントし `FBSQL_ROOT=/fbsql` を指定
+  (コマンドは README の Paper tables 節)
+
+### Changed Files
+
+- `scripts/51_generate_paper_tables.R`: 新規
+- `README.md`: Paper tables 節を追加
+- (FbSQL 側)`paper/tables/*.{tex,md}` 生成物 + 配線 — 本体リポジトリの
+  コミット `Generate paper tables` を参照
+
+### Validation
+
+- script 実行成功(4ファイル生成)。FbSQL 側で make html / pdf / jss が
+  通り、JSS PDF の Table 1(p.4)/ Table 2(p.20)を目視確認(崩れなし)
+- ドリフト検知の停止動作を実地で確認済み
+
+### Known Issues
+
+- Table 1 の縮約セルはキュレーションであり、CSV の実質的変更時は
+  script 側の更新が必要(ドリフト検知は判定語レベルのみ)
+
+### Next Step
+
+- 投稿前に related_work.csv の残 TBD(PostgresML / Hivemall の
+  interaction・offset・weight 等)を解消できるか再調査
+
+Commit: `Add paper table generation script`(本エントリを含むコミット)。
+
+---
+
 ## 2026-07-08: Tier 3(Hivemall / H2O-3 + Sparkling Water)の文献ベース比較 — 比較表完成
 
 ### Summary

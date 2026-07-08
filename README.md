@@ -145,6 +145,21 @@ docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/exp -w /exp fbsql-dev \
     Rscript scripts/50_make_related_work_table.R
 ```
 
+## Paper tables
+
+The manuscript's table assets (`FbSQL/paper/tables/*.{tex,md}`) are
+generated here — the paper never hand-edits them. Script 51 condenses
+`data/related_work.csv` for print (drift checks stop it if the curated
+condensation no longer matches the CSV) and renders `data/customer.csv`
+as the running-example dataset table:
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" \
+    -v "$PWD":/exp -v "$(cd ../FbSQL && pwd)":/fbsql \
+    -e FBSQL_ROOT=/fbsql -w /exp fbsql-dev \
+    Rscript scripts/51_generate_paper_tables.R
+```
+
 ## Reproducibility
 
 - All input data is hand-written and deterministic (no RNG so far; any
