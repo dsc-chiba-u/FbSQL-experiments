@@ -1,0 +1,14 @@
+system,aspect,finding,source
+Apache Hivemall,training_api,logress(add_bias(features); label; option string like '-total_steps N') aggregated in HiveQL; autonomic learning-rate estimator when steps omitted,docs/gitbook/binaryclass/a9a_lr.md (apache/incubator-hivemall@master; fetched 2026-07-08)
+Apache Hivemall,model_representation,the model IS a table (feature; weight) -- feature is an index without term semantics,docs/gitbook/binaryclass/a9a_lr.md
+Apache Hivemall,prediction,hand-assembled SQL: LATERAL VIEW explode(add_bias(features)) + LEFT OUTER JOIN with the model table + sigmoid(sum(weight*value)); 0.5 threshold applied manually,docs/gitbook/binaryclass/a9a_lr.md
+Apache Hivemall,feature_encoding,features are arrays of 'index:value' strings assembled by the user; vectorization helper UDFs exist in the feature-engineering guide,docs/gitbook/binaryclass/a9a_lr.md
+Apache Hivemall,gaps,"NULL handling, observation weights, offset, and seeds are not documented in the reviewed tutorial; left TBD",docs/gitbook/binaryclass/a9a_lr.md
+Apache Hivemall,status,retired from the Apache Incubator on 2022-09-01,project status (as recorded in the survey underlying the tier assignment)
+H2O-3 + Sparkling Water,families,"gaussian, binomial, fractionalbinomial, quasibinomial, multinomial, ordinal, poisson, negativebinomial, gamma, tweedie; links identity/logit/log/inverse/tweedie/ologit (family-dependent)",h2o-docs/src/product/data-science/glm.rst (h2oai/h2o-3@master; fetched 2026-07-08)
+H2O-3 + Sparkling Water,offset_weight_interaction,offset_column and weights_column parameters exist; interactions and interaction_pairs parameters exist,h2o-docs/src/product/data-science/glm.rst
+H2O-3 + Sparkling Water,model_specification,x/y column lists (no R formula); categorical columns handled internally and manual one-hot explicitly discouraged,h2o-docs/src/product/data-science/glm.rst
+H2O-3 + Sparkling Water,regularization_default,default fit is regularized elastic net (alpha 0.5 unless L-BFGS); with default lambda ALL factor levels are kept -- a reference level is dropped only when lambda=0,h2o-docs/src/product/data-science/glm.rst
+H2O-3 + Sparkling Water,inference,standard errors / p-values only on request (compute_p_values; IRLSM; collinear columns must be removed),h2o-docs/src/product/data-science/glm.rst
+H2O-3 + Sparkling Water,missing_and_unseen,missing_values_handling: MeanImputation (default) / Skip / PlugValues; unseen categorical levels at scoring are silently replaced by the most frequent training level (default) or the variable is ignored (Skip),h2o-docs/src/product/data-science/glm.rst
+H2O-3 + Sparkling Water,reproducibility,seed parameter exists (default -1 = time-based),h2o-docs/src/product/data-science/glm.rst

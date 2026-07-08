@@ -23,6 +23,12 @@ This is the companion repository in the two-repository layout:
 BigQuery ML is not OSS and is excluded from the OSS comparison; the paper's
 Discussion may mention it as a non-OSS SQL-ML example.
 
+Tier 1/2 rows of the comparison table are backed by executed experiments in
+this repo; Tier 3 rows (Hivemall, H2O-3 + Sparkling Water) are
+literature-based, with per-claim sources recorded in
+`results/summary/related_work_notes.csv`. Cells that could not be verified
+remain `TBD`.
+
 ## Layout
 
 ```

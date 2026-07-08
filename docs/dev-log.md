@@ -5,6 +5,61 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-08: Tier 3(Hivemall / H2O-3 + Sparkling Water)の文献ベース比較 — 比較表完成
+
+### Summary
+
+- 実験なし・公式ドキュメントベースで `related_work.csv` の残り2行を完成させ、
+  **6システム × 19列の Related Work 比較表が論文下書きとして揃った**
+- 一次情報は GitHub 上のドキュメントソースから取得(公式サイトは DNS タイムアウト):
+  Hivemall は a9a_lr チュートリアル(apache/incubator-hivemall)、H2O は glm.rst
+  (h2oai/h2o-3、1987行を gh api で取得しパラメータを直接確認)。
+  **主張ごとの出典を `results/summary/related_work_notes.csv` に記録**
+- **Hivemall の位置付け**: モデルが純粋なテーブル(feature, weight)で予測も SQL 手組み
+  (explode + join + sigmoid)— 比較系で**最も relational closure に近い**が、feature は
+  意味を持たない index で、formula・metadata・リンク関数適用まで全て手作業。
+  Apache Incubator を 2022-09-01 に retired
+- **H2O の位置付け**: 統計的に最もリッチな GLM(10 family、offset/weights/interactions/
+  compute_p_values あり)だが SQL API ではない(x/y 列リスト指定、Sparkling Water 経由の
+  SQL-adjacent)。**既定が正則化あり(elastic net α=0.5)で lambda=0 にしないと glm()
+  と一致しない**、**未知カテゴリは scoring 時に最頻水準へ無言置換(既定)**という
+  安全性の知見も記録
+- 整合性パス: 全行の yes/no/partial/TBD の使い分けを統一、実測(verified/observed)と
+  文献(literature-based; not executed)を Notes で区別、FbSQL 行も表現を統一。
+  BigQuery ML は非 OSS として除外を維持
+
+### Changed Files
+
+- `data/related_work.csv`: Hivemall / H2O 行を更新、FbSQL 行の表現統一
+- `results/summary/related_work_notes.csv`: 文献ベース主張の出典13件(新規)
+- `results/tables/related_work.md`: 再生成
+- `README.md`: Tier 3 が文献ベースであることと出典ファイルの案内を追記
+
+### Validation
+
+- 文献調査のみ(実験・インストールなし)。H2O glm.rst は原文 grep でパラメータ存在を
+  直接確認(offset_column / weights_column / interactions / missing_values_handling /
+  compute_p_values / seed)
+
+### Known Issues
+
+- 残 TBD: PostgresML の interaction / offset / weight(3セル)、Hivemall の
+  interaction / offset / weight / NULL handling(4セル)。いずれも文書で確認できず
+  推測を避けた
+- Hivemall のヘルパー UDF(categorical_features 等)は feature-engineering ガイドの
+  存在を根拠にしており、個別ページの精読は未実施
+
+### Next Step
+
+- 比較表が揃ったので、次は本体側の論文フェーズへ: `FbSQL/paper/` に JSS 原稿の骨組み
+  (fbrglm の paper/ 構成を踏襲)を作り、この比較表と running example の実測結果を
+  流し込む。あるいは先に PGXN 公開準備(META.json / Changes)
+
+Commit: `Complete related work comparison table`(本エントリを含むコミット)。
+push 後の `git status`: clean。
+
+---
+
 ## 2026-07-08: Apache Spark MLlib 最小比較パイプライン(Tier 2)
 
 ### Summary
