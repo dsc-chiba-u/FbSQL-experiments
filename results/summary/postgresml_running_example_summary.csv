@@ -1,0 +1,6 @@
+"section","item","fbsql","postgresml","note"
+"prediction","c101",0.0406,0,"values not expected to match: FbSQL is an R-parity GLM probability; PostgresML output comes from its own estimator (see api design notes)"
+"prediction","c102",0.9794,1,"values not expected to match: FbSQL is an R-parity GLM probability; PostgresML output comes from its own estimator (see api design notes)"
+"prediction","c103",0.428,1,"values not expected to match: FbSQL is an R-parity GLM probability; PostgresML output comes from its own estimator (see api design notes)"
+"prediction","c104",,,"values not expected to match: FbSQL is an R-parity GLM probability; PostgresML output comes from its own estimator (see api design notes)"
+"prediction","c105",,0,"values not expected to match: FbSQL is an R-parity GLM probability; PostgresML output comes from its own estimator (see api design notes)"

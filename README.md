@@ -90,6 +90,25 @@ hand-curated design observations live in
 (e.g. MADlib silently scoring unseen factor levels as the reference level)
 are annotated rather than treated as failures.
 
+## PostgresML comparison (Tier 2)
+
+PostgresML is compared as the other PostgreSQL-extension SQL-ML system. Its
+official image ships the extension preinstalled (`PGML_IMAGE` overrides the
+default `ghcr.io/postgresml/postgresml:2.7.12`; note the image is ~15 GB):
+
+```bash
+docker pull ghcr.io/postgresml/postgresml:2.7.12
+scripts/40_postgresml_smoke.sh              # pgml.version() + catalog tables
+scripts/41_postgresml_running_example.sh    # churn example + NULL/categorical probes
+docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/exp -w /exp fbsql-dev \
+    Rscript scripts/42_compare_fbsql_postgresml.R
+```
+
+Numeric agreement with FbSQL/R is NOT expected here (PostgresML fits its own
+estimators behind an algorithm-name API and predicts class labels); the
+deliverables are `results/summary/postgresml_api_design_notes.csv` and the
+probe logs under `results/raw/`.
+
 Regenerate the related-work table draft from its CSV source:
 
 ```bash

@@ -5,6 +5,74 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-08: PostgresML 最小比較パイプライン(Tier 2)
+
+### Summary
+
+- PostgresML 環境を固定: 公式イメージ `ghcr.io/postgresml/postgresml:2.7.12`
+  (約15GB、pgml 拡張 + PostgreSQL 15 + Python ML ランタイム同梱)。
+  **smoke → fit → predict まで実機で成功**
+- 判明した起動の癖2つを解決してスクリプト化: (1) CMD が空だと entrypoint が即終了
+  (`tail -f /dev/null` を渡す)、(2) pgml 拡張の初期化が非同期のため readiness は
+  `SELECT 1` ではなく `pgml.version()` で判定
+- Running Example 相当(churn 分類、まず age のみ)を `pgml.train` / `pgml.predict` で実行
+- **主要な観測**:
+  - API は family/link ではなく **task + algorithm 名中心**(SE・p値・CI は存在しない。
+    metrics は roc_auc / f1 / accuracy 等の ML 指標)
+  - fit はテーブル名を snapshot 化し、**自動で 25% test 分割・metrics 計算・デプロイ**
+    まで行う。モデルは**シリアライズ済みバイナリ**(本例 686 bytes)として
+    `pgml.files` に保存され、**ユーザーから見える relation としては存在しない**
+  - predict は **project 名文字列**参照(デプロイ状態というミュータブルな間接参照)で、
+    分類では**クラスラベル(0/1)**を返す。確率は `pgml.predict_proba`(別関数)
+  - **NULL 特徴量は `ERROR: array contains NULL` のハードエラー**(実測。CASE での
+    手動ガードが必要)
+  - **text 列は受理されるが既定でordinalラベルエンコード**(実測: F=1, M=2, Other=3)
+    — 線形モデルに人工的な順序を持ち込む。treatment contrast との統計的意味論の差
+  - test 分割が単一クラスになると**学習自体が失敗**(実測)。estimator の乱数シードは
+    未公開 — 再現性の設計差
+  - snapshot に列型・preprocessor・カテゴリ写像が保存される(構造化 metadata は
+    存在するが pgml のシステムカタログ内)
+- `data/related_work.csv` の PostgresML 行を実測+公式情報(MIT ライセンス)で更新。
+  MADlib 行の残 TBD も公式ドキュメントで解消(offset / weight: glm()/logregr_train()
+  のパラメータに存在せず。IRLS は決定的で RNG 不使用)
+
+### Changed Files
+
+- `scripts/40_postgresml_smoke.sh` / `41_postgresml_running_example.sh` /
+  `sql/41_postgresml_running_example.sql` / `42_compare_fbsql_postgresml.R`: 新規
+- `results/raw/running_example_predictions_postgresml.csv` +
+  `postgresml_null_probe.log` + `postgresml_categorical_probe.log`: 実測出力
+- `results/summary/postgresml_running_example_summary.csv` +
+  `postgresml_api_design_notes.csv`(15観点): 新規
+- `data/related_work.csv` + `results/tables/related_work.md`: PostgresML 行更新 +
+  MADlib 行の TBD 解消
+- `README.md`: PostgresML 比較セクション追加
+
+### Validation
+
+- `40_postgresml_smoke.sh` → pgml 2.7.12 応答、カタログ5テーブル確認
+- `41_postgresml_running_example.sh` → fit・predict・プローブ2種まで成功
+- 予測(参考値): c101→0, c102→1, c103→1, c104→NULL(手動ガード), c105→0。
+  数値一致は設計上期待しない(異なる推定器・出力スケール)ことを summary に明記
+
+### Known Issues
+
+- PostgresML の novel level 予測挙動(ROW 形式での text 入力)は未検証(TBD として記録)
+- interaction / offset / weight は PostgresML では概念として存在しない可能性が高いが
+  未確認のため TBD のまま
+- イメージが 15GB と巨大(CI に載せる場合は要検討。現状 experiments に CI なしで問題なし)
+
+### Next Step
+
+- Tier 2 残りの Spark MLlib(RFormula があるため formula interface の比較として重要)
+  の最小環境固定と Running Example 相当、または Tier 3(Hivemall / H2O)の文献調査で
+  related_work.csv を完成させる
+
+Commit: `Add PostgresML running example comparison`(本エントリを含むコミット)。
+push 後の `git status`: clean。
+
+---
+
 ## 2026-07-08: Apache MADlib 最小比較パイプライン(Tier 1)
 
 ### Summary
