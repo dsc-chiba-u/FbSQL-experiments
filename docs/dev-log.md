@@ -5,6 +5,48 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-13: オーバーヘッド・マイクロベンチ(script 13)+ Table 3 生成
+
+### Summary
+
+- 論文の VLDB Journal 転針(Phase 6)に伴い、**言語層のオーバーヘッドを
+  bound する microbenchmark** を新設(性能主張ではない旨をスクリプトと
+  論文の両方に明記)
+- `scripts/13_overhead_benchmark.sh`: 決定的合成データ(generate_series
+  演算のみ、乱数不使用)で n = 1e3 / 1e4 / 1e5、各3回。焼き込み済み
+  fbsql-dev イメージを使用(mount 不要)。計測: fit_glm() vs 同一データの
+  素の stats::glm()(同コンテナ内 R)、predict_glm() の行スケーリング。
+  raw は results/raw/overhead_benchmark_runs.csv、中央値は
+  results/summary/overhead_benchmark.csv に commit
+- 実測(参照環境、中央値): fit_glm 205/229/477 ms vs R glm 7/22/166 ms
+  (固定 ~0.2s = PL/R 起動 + SPI 転送、以後は推定に追随)、predict_glm
+  9/18/67 ms(線形、R 不使用)
+- `scripts/51_generate_paper_tables.R` に **Table 3(overhead)を追加**
+  (tex/md、`FbSQL/paper/tables/overhead_benchmark.*` へ生成)
+- 既知のハマり: heredoc を渡す `docker exec` には `-i` が必須(欠くと
+  psql が空入力で成功扱いになり、後段が silent に壊れる)
+
+### Changed Files
+
+- `scripts/13_overhead_benchmark.sh`: 新規
+- `scripts/51_generate_paper_tables.R`: Table 3 生成を追加
+- `results/raw/overhead_benchmark_runs.csv` /
+  `results/summary/overhead_benchmark.csv`: 新規(実測値)
+- `README.md`: microbenchmark 節を追加
+
+### Validation
+
+- script 13 実行成功(上記実測値)。script 51 再実行で3表とも生成成功
+
+### Next Step
+
+- 論文側(FbSQL/paper)の Evaluation に Overhead 小節 + Table 3 を配線
+  (本体リポジトリのコミット参照)
+
+Commit: `Add overhead microbenchmark`(本エントリを含むコミット)。
+
+---
+
 ## 2026-07-08: 論文 Table assets の生成スクリプト(script 51)
 
 ### Summary

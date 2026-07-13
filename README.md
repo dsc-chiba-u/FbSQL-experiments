@@ -145,6 +145,23 @@ docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/exp -w /exp fbsql-dev \
     Rscript scripts/50_make_related_work_table.R
 ```
 
+## Interface overhead microbenchmark
+
+Script 13 bounds the price of the FbSQL language layer — it is not a
+performance claim. On deterministic synthetic data (no RNG;
+`generate_series` arithmetic) it times `fit_glm()` against calling
+`stats::glm()` directly in R on identical data, and `predict_glm()`
+scoring the same rows, at 10^3 / 10^4 / 10^5 rows, three runs each:
+
+```bash
+scripts/13_overhead_benchmark.sh
+```
+
+Raw runs land in `results/raw/overhead_benchmark_runs.csv`, medians in
+`results/summary/overhead_benchmark.csv` (the source of the paper's
+overhead table). Times are machine-dependent; the committed numbers are
+from the pinned reference environment.
+
 ## Paper tables
 
 The manuscript's table assets (`FbSQL/paper/tables/*.{tex,md}`) are
