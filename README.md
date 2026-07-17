@@ -1,5 +1,7 @@
 # FbSQL-experiments
 
+[![DOI](https://zenodo.org/badge/1292894601.svg)](https://doi.org/10.5281/zenodo.21405819)
+
 Reproducible experiments, smoke tests, and comparison material for
 [FbSQL](https://github.com/dsc-chiba-u/FbSQL), a closure-preserving
 formula-based PostgreSQL extension for statistical modeling in SQL.
