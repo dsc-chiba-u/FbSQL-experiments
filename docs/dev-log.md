@@ -5,6 +5,28 @@ ChatGPT に進捗を共有するための要約ログ。最新の作業を一番
 
 ---
 
+## 2026-07-17: v0.1.0 リリース(本体 FbSQL 0.1.0 の companion スナップショット)
+
+### Summary
+
+- 本体 FbSQL 0.1.0(PGXN / GitHub Release / Zenodo DOI
+  10.5281/zenodo.21404862)に対応する **companion スナップショットとして
+  v0.1.0 タグ + GitHub Release を作成**
+- 内容: running example の R parity(13/13)、MADlib / PostgresML /
+  Spark MLlib の実測比較、Hivemall / H2O の文献比較(出典 CSV)、
+  related_work.csv → 論文表の生成(script 50/51)、オーバーヘッド・
+  マイクロベンチ(script 13)
+- Zenodo の GitHub 連携が有効なら本 Release でアーカイブが作成される —
+  発行された DOI は論文の Replication material へ挿入する(本体側 TODO)
+
+### Changed Files
+
+- `docs/dev-log.md`: 本エントリのみ(タグはこのコミットに付与)
+
+Commit: `Record v0.1.0 companion snapshot`
+
+---
+
 ## 2026-07-13: オーバーヘッド・マイクロベンチ(script 13)+ Table 3 生成
 
 ### Summary
